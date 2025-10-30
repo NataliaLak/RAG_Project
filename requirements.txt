@@ -1,0 +1,9 @@
+torch
+transformers
+sentence-transformers
+streamlit
+psycopg2
+sqlalchemy
+pgvector
+langchain
+ollama
