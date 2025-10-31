@@ -11,6 +11,7 @@ data/processed/
 data/chunks/
 embeddings/
 vector_db/
+venv/
 
 # System files
 .DS_Store
