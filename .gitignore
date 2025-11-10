@@ -6,12 +6,12 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Data files
-data/raw/
 data/processed/
 data/chunks/
 embeddings/
-vector_db/
 venv/
+faiss_index/
+.streamlit/secrets.toml
 
 # System files
 .DS_Store
