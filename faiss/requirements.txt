@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+
+numpy<2
+faiss-cpu
+langchain
+langchain-community
+sentence-transformers
+torch==2.2.2+cpu
+
+--extra-index-url https://download.pytorch.org/whl/cpu

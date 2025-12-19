@@ -1,0 +1,24 @@
+services:
+  faiss:
+    build:
+      context: ./faiss
+      dockerfile: Dockerfile.faiss
+    container_name: faiss-index
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./faiss/faiss_index:/faiss/faiss_index:ro   
+
+  rag-app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: rag-app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - faiss
+    volumes:
+      - ./app:/app
+      - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml
+

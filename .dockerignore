@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+
+# HuggingFace / torch caches
+~/.cache/
+.cache/
+**/cache/
+
+# Build artifacts
+dist/
+build/
+
+# Data (оставь только нужное!)
+data/
+datasets/
+*.csv
+*.json
+
+# Models (если не нужны в образе)
+models/
+checkpoints/
+
+# VSCode
+.vscode/
+
+# Streamlit secrets (никогда не включай)
+.streamlit/secrets.toml

@@ -1,22 +1,35 @@
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.swp
 
-# Notebook checkpoints
+# Virtual environment
+venv/
+
+# Notebooks
 .ipynb_checkpoints/
 
 # Data files
-data/processed/
-data/chunks/
-embeddings/
-venv/
-faiss_index/
-.streamlit/secrets.toml
+data/
+faiss/faiss_index/
 
-# System files
-.DS_Store
+# Streamlit secrets
+.streamlit/secrets.toml
+app/.streamlit/
+
+
+# Model & cache files
 *.log
 *.pkl
 *.npy
 *.pt
 *.ckpt
+
+# System files
+.DS_Store
+
+# Docker-related
+*.env
+

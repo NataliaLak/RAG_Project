@@ -1,0 +1,16 @@
+streamlit
+requests
+python-dotenv
+
+langchain
+langchain-core
+langchain-community
+langchain-groq
+
+huggingface-hub
+sentence-transformers
+
+torch==2.2.2+cpu
+numpy<2
+
+--extra-index-url https://download.pytorch.org/whl/cpu
