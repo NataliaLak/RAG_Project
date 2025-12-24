@@ -1,34 +1,27 @@
 import requests
+from typing import List
 
-FAISS_API_URL = "http://faiss-index:8001/search"
+FAISS_API_URL = "http://faiss:8001"
 
 
-def faiss_search(query: str, k: int = 5):
-    """
-    Отправляем ТЕКСТ запроса в FAISS.
-    FAISS:
-    - считает embedding
-    - ищет
-    - возвращает score
-    """
+def faiss_search(query: str, k: int = 5, source: str | None = None) -> List[dict]:
     try:
-        response = requests.post(
-            FAISS_API_URL,
-            json={
-                "text": query,
-                "k": k
-            },
+        payload = {
+            "text": query,
+            "k": k,
+        }
+        if source:
+            payload["source"] = source
+
+        resp = requests.post(
+            f"{FAISS_API_URL}/search",
+            json=payload,
             timeout=15
         )
-        response.raise_for_status()
+        resp.raise_for_status()
 
-        data = response.json()
-        if not isinstance(data, list):
-            raise ValueError(f"Неверный формат ответа FAISS API: {data}")
-
-        return data
+        return resp.json()
 
     except Exception as e:
         print(f"[FAISS ERROR] {e}")
         return []
-

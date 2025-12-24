@@ -1,5 +1,6 @@
 import json
 import random
+from typing import List, Optional
 
 from backend.faiss_client import faiss_search
 from backend.llm import get_llm
@@ -9,50 +10,86 @@ from backend.rag import retrieve_context
 llm = get_llm()
 
 
-def extract_first_json_array(text: str):
+# ---------- utils ----------
+
+def extract_first_json_array(text: str) -> Optional[list]:
+    """
+    Извлекает первый JSON-массив из текста LLM.
+    """
     start = text.find("[")
     end = text.rfind("]")
     if start == -1 or end == -1:
         return None
+
     try:
         return json.loads(text[start:end + 1])
     except Exception:
         return None
 
 
-def auto_generate_quiz_topics(n_chunks: int = 10) -> list[str]:
-    data = faiss_search("главы содержание структура", k=50)
+# ---------- topics ----------
+
+def auto_generate_quiz_topics(
+    n_chunks: int = 10,
+    book: str | None = None
+) -> List[str]:
+    """
+    Автоматически генерирует темы квиза по книге.
+    """
+    data = faiss_search(
+        query="главы содержание структура",
+        k=50,
+        source=book
+    )
+
     if not data:
         return []
 
     random.shuffle(data)
     selected = data[:n_chunks]
 
-    text = "\n".join(
+    context = "\n".join(
         item.get("text", "") for item in selected if item.get("text")
     )
 
     prompt = f"""
-Проанализируй текст из нескольких фрагментов книги.
-Сформируй ровно 5 ключевых тем / глав книги в формате JSON массива:
+Проанализируй текст из фрагментов книги.
+Сформируй ровно 5 ключевых тем / глав
+в формате JSON массива:
+
 ["...", "...", "...", "...", "..."]
 
 Контекст:
-{text}
+{context}
     """
 
     res = llm.invoke(prompt).content
     topics = extract_first_json_array(res)
+
     if not topics:
         raise ValueError("Не удалось извлечь темы квиза")
 
-    return list({t.strip() for t in topics if t.strip()})
+    # убираем дубли и мусор
+    return list({t.strip() for t in topics if isinstance(t, str) and t.strip()})
 
 
-def generate_quiz(topic: str):
-    data = faiss_search(topic, k=6)
+# ---------- quiz ----------
+
+def generate_quiz(
+    topic: str,
+    book: str | None = None
+) -> list:
+    """
+    Генерирует квиз по теме и книге.
+    """
+    data = faiss_search(
+        query=topic,
+        k=6,
+        source=book
+    )
+
     if not data:
-        return None
+        raise ValueError("Не найден контекст для квиза")
 
     random.shuffle(data)
     selected = data[:4]
@@ -62,30 +99,48 @@ def generate_quiz(topic: str):
     )
 
     raw = llm.invoke(
-        quiz_generate_prompt.format(context=context, topic=topic)
+        quiz_generate_prompt.format(
+            context=context,
+            topic=topic
+        )
     ).content
 
     quiz = extract_first_json_array(raw)
     if not quiz:
         raise ValueError("Ошибка парсинга квиза")
 
+    # перемешиваем варианты ответов
     for q in quiz:
-        random.shuffle(q["options"])
+        if "options" in q:
+            random.shuffle(q["options"])
 
     return quiz[:5]
 
 
-def explain_correct_answer(answer: str) -> str:
-    context, _, _, _ = retrieve_context(answer, n=3)
+# ---------- explanation ----------
+
+def explain_correct_answer(
+    answer: str,
+    book: str | None = None
+) -> str:
+    """
+    Объясняет правильный ответ на основе контекста из книги.
+    """
+    context, _, _, _ = retrieve_context(
+        query=answer,
+        n=3,
+        book=book
+    )
 
     prompt = f"""
 Ты преподаватель.
-Объясни правильный ответ понятным языком на основе контекста.
+Объясни правильный ответ понятным языком,
+опираясь на контекст из книги.
 
 Контекст:
 {context}
 
 Объяснение:
     """
-    return llm.invoke(prompt).content
 
+    return llm.invoke(prompt).content

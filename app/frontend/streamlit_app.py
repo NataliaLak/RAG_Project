@@ -1,4 +1,6 @@
 import streamlit as st
+import requests
+
 from backend.rag import get_rag_answer
 from backend.quiz import (
     auto_generate_quiz_topics,
@@ -6,60 +8,135 @@ from backend.quiz import (
     explain_correct_answer
 )
 
-st.set_page_config(page_title="📘 RAG Ассистент", layout="wide")
+# ================== CONFIG ==================
+st.set_page_config(page_title="📘 RAG & Quiz Ассистент", layout="wide")
 st.title("📘 RAG & Quiz Ассистент")
 
+FAISS_API_URL = "http://faiss:8001"  # ВАЖНО: имя сервиса из docker-compose
+
+# ================== SIDEBAR: ЗАГРУЗКА КНИГ ==================
+st.sidebar.header("📚 Управление книгами")
+
+# --- Upload file ---
+uploaded_file = st.sidebar.file_uploader(
+    "Загрузить книгу (PDF или TXT)",
+    type=["pdf", "txt"]
+)
+
+if uploaded_file:
+    files = {"file": (uploaded_file.name, uploaded_file.getvalue())}
+    try:
+        res = requests.post(f"{FAISS_API_URL}/ingest", files=files)
+        res.raise_for_status()
+        st.sidebar.success(f"Книга '{uploaded_file.name}' загружена")
+        st.rerun()
+    except Exception as e:
+        st.sidebar.error(f"Ошибка загрузки: {e}")
+
+# ================== LOAD BOOKS ==================
+try:
+    books_res = requests.get(f"{FAISS_API_URL}/books")
+    books_res.raise_for_status()
+    books = books_res.json()
+except Exception as e:
+    st.error(f"Ошибка получения списка книг: {e}")
+    books = []
+
+if not books:
+    st.warning("Загрузите хотя бы одну книгу, чтобы начать работу")
+    st.stop()
+
+# ================== GLOBAL BOOK SELECTION ==================
+if "selected_book" not in st.session_state:
+    st.session_state.selected_book = "Все"
+
+st.subheader("📚 Выбор книги")
+
+st.session_state.selected_book = st.selectbox(
+    "По какой книге работать:",
+    ["Все"] + books,
+    index=(["Все"] + books).index(st.session_state.selected_book)
+)
+
+selected_book = st.session_state.selected_book
+book_param = None if selected_book == "Все" else selected_book
+
+st.markdown(f"**Текущая книга:** `{selected_book}`")
+st.divider()
+
+# ================== TABS ==================
 tab_rag, tab_quiz = st.tabs(["🔍 RAG", "🧠 Квизы"])
 
-# ---------------- RAG ----------------
+# ================== RAG ==================
 with tab_rag:
-    question = st.text_input("Введите вопрос:")
+    st.subheader("🔍 Вопрос по книге")
+
+    question = st.text_input("Введите вопрос")
 
     if question:
         try:
-            answer, docs, metas, scores = get_rag_answer(question)
+            answer, docs, metas, scores = get_rag_answer(
+                question,
+                book=book_param
+            )
         except Exception as e:
-            st.error(f"Ошибка при получении ответа: {e}")
+            st.error(f"Ошибка RAG: {e}")
             st.stop()
 
         st.markdown("### 💬 Ответ")
         st.write(answer)
 
-        st.markdown("### 📚 Фрагменты")
-        for i, (doc, meta, score) in enumerate(zip(docs, metas, scores)):
-            score_str = f"{score:.4f}" if score is not None else "-"
-            chunk_id = meta.get("chunk_id") if meta else "-"
-            st.markdown(
-            f"**Фрагмент {i+1}** — score={score_str}, chunk_id={chunk_id}"
-            )
-            st.write(doc[:700] + "…")
-            st.divider()
+        if docs:
+            st.markdown("### 📚 Фрагменты из книги")
+            for i, (doc, meta, score) in enumerate(zip(docs, metas, scores)):
+                st.markdown(
+                    f"**Фрагмент {i+1}**  "
+                    f"(source={meta.get('source')}, "
+                    f"chunk={meta.get('chunk_id')}, "
+                    f"score={score:.2f})"
+                )
+                st.write(doc[:800] + "…")
+                st.divider()
+        else:
+            st.info("Контекст не найден")
 
-# ---------------- QUIZ ----------------
+# ================== QUIZ ==================
 with tab_quiz:
-    if "quiz_topics" not in st.session_state:
+    st.subheader("🧠 Квизы по книге")
+
+    # Генерация тем (ОДИН РАЗ НА КНИГУ)
+    if (
+        "quiz_topics" not in st.session_state
+        or st.session_state.get("quiz_book") != selected_book
+    ):
         try:
-            st.session_state.quiz_topics = auto_generate_quiz_topics()
+            st.session_state.quiz_topics = auto_generate_quiz_topics(
+                book=book_param
+            )
+            st.session_state.quiz_book = selected_book
         except Exception as e:
             st.error(f"Ошибка генерации тем: {e}")
             st.stop()
 
     topics = st.session_state.quiz_topics
+
     if not topics:
-        st.warning("Темы не найдены")
+        st.warning("Темы не найдены для выбранной книги")
         st.stop()
 
     topic = st.selectbox("Выберите тему:", topics)
 
     if st.button("🎲 Сгенерировать квиз"):
         try:
-            st.session_state.quiz = generate_quiz(topic)
+            st.session_state.quiz = generate_quiz(
+                topic,
+                book=book_param
+            )
+            st.session_state.answers = {}
+            st.session_state.checked = False
         except Exception as e:
             st.error(f"Ошибка генерации квиза: {e}")
             st.stop()
-
-        st.session_state.answers = {}
-        st.session_state.checked = False
 
     quiz = st.session_state.get("quiz")
 
@@ -90,8 +167,9 @@ with tab_quiz:
                 st.error("Неверно ❌")
                 explanation = explain_correct_answer(correct_answer)
                 st.markdown(
-                    f"**Вы ответили:**  \n{user_answer}\n\n"
-                    f"**Правильный ответ:**  \n{correct_answer}\n\n"
+                    f"**Вы ответили:** {user_answer}\n\n"
+                    f"**Правильный ответ:** {correct_answer}\n\n"
                     f"{explanation}"
                 )
+
         st.info(f"Результат: {correct} / {len(quiz)}")

@@ -2,10 +2,13 @@ fastapi
 uvicorn[standard]
 
 numpy<2
+pymupdf
+python-multipart
 faiss-cpu
 langchain
 langchain-community
 sentence-transformers
+langchain_experimental
 torch==2.2.2+cpu
 
 --extra-index-url https://download.pytorch.org/whl/cpu
