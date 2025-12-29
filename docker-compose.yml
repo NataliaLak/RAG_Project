@@ -5,9 +5,10 @@ services:
       dockerfile: Dockerfile.faiss
     container_name: faiss-index
     ports:
-      - "8001:8001"
+      - "${FAISS_PORT}:8001"
     volumes:
-      - ./faiss/faiss_index:/faiss/faiss_index  
+      - ./faiss/faiss_index:${FAISS_INDEX_PATH}
+    restart: unless-stopped
 
   rag-app:
     build:
@@ -15,10 +16,13 @@ services:
       dockerfile: Dockerfile
     container_name: rag-app
     ports:
-      - "8501:8501"
+      - "${APP_PORT}:8501"
     depends_on:
       - faiss
+    env_file:
+      - .env
     volumes:
       - ./app:/app
       - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml
+    restart: unless-stopped
 
