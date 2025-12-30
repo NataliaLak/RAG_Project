@@ -44,14 +44,23 @@ Streamlit UI → RAG / Quiz logic → FAISS API → Vector Store
 ## Структура проекта
 
 RAG_Project/
+
 ├── app/ # Streamlit приложение
+
 ├── faiss/ # FAISS сервис
+
 │ ├── faiss_server.py
+
 │ └── Dockerfile.faiss
+
 ├── docker-compose.yml
+
 ├── .env # секреты (в .gitignore)
+
 ├── .gitignore
+
 ├── notebooks/
+
 └── README.md
 
 
@@ -64,6 +73,7 @@ RAG_Project/
 ```bash
 git clone https://github.com/NataliaLak/RAG_Project.git
 cd RAG_Project
+```
 
 ### Создать .env файл
 
@@ -75,7 +85,7 @@ GROQ_API_KEY=your_api_key_here
 
 ```bash
 docker compose up --build
-
+```
 
 При первом запуске:
 
