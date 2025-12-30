@@ -4,11 +4,16 @@ on:
   push:
     branches: ["main"]
   pull_request:
-  workflow_dispatch: 
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: natalialak
+  OWNER: natalialak
+  REPO: rag_project
   FAISS_IMAGE: faiss-service
   STREAMLIT_IMAGE: rag-app
 
@@ -37,10 +42,9 @@ jobs:
           context: ./faiss
           file: ./faiss/Dockerfile.faiss
           push: true
-          pull: true
           tags: |
-            ghcr.io/${{ env.IMAGE_NAMESPACE }}/${{ env.FAISS_IMAGE }}:latest
-            ghcr.io/${{ env.IMAGE_NAMESPACE }}/${{ env.FAISS_IMAGE }}:${{ github.sha }}
+            ghcr.io/natalialak/rag_project/faiss-service:latest
+            ghcr.io/natalialak/rag_project/faiss-service:${{ github.sha }}
 
       # ---------- STREAMLIT ----------
       - name: Build & push RAG app image
@@ -49,7 +53,6 @@ jobs:
           context: ./app
           file: ./app/Dockerfile
           push: true
-          pull: true
           tags: |
-            ghcr.io/${{ env.IMAGE_NAMESPACE }}/${{ env.STREAMLIT_IMAGE }}:latest
-            ghcr.io/${{ env.IMAGE_NAMESPACE }}/${{ env.STREAMLIT_IMAGE }}:${{ github.sha }}
+            ghcr.io/natalialak/rag_project/rag-app:latest
+            ghcr.io/natalialak/rag_project/rag-app:${{ github.sha }}
