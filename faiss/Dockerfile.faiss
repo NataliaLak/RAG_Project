@@ -5,7 +5,8 @@ WORKDIR /faiss
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY faiss_index/ ./faiss_index
+RUN mkdir -p /faiss/faiss_index
+
 COPY faiss_server.py ./
 
 EXPOSE 8001
