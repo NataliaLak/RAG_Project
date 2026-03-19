@@ -1,18 +1,16 @@
-FROM python:3.11-slim
-
+FROM python:3.12-slim 
 WORKDIR /app
 
-# Копируем общий requirements
-COPY requirements.txt ./
+# Копируем зависимости
+COPY app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем frontend и backend
-COPY frontend/ ./frontend
-COPY backend/ ./backend  
+# Копируем код (все содержимое папки app теперь в /app)
+COPY app/ .
 
-# Открываем порт Streamlit
 EXPOSE 8501
 
-# Запуск Streamlit
-CMD ["bash", "-c", "PYTHONPATH=/app streamlit run frontend/streamlit_app.py --server.port=8501 --server.address=0.0.0.0"]
+# Устанавливаем PYTHONPATH, чтобы Python видел корень /app
+ENV PYTHONPATH=/app
 
+CMD ["streamlit", "run", "frontend/streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

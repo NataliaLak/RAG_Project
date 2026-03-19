@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.rag import get_rag_answer
 from backend.quiz import (
     auto_generate_quiz_topics,
@@ -12,7 +14,7 @@ from backend.quiz import (
 st.set_page_config(page_title="📘 RAG & Quiz Ассистент", layout="wide")
 st.title("📘 RAG & Quiz Ассистент")
 
-FAISS_API_URL = "http://faiss:8001"  # ВАЖНО: имя сервиса из docker-compose
+FAISS_API_URL = os.getenv("FAISS_API_URL", "http://faiss:8001")
 
 # ================== SIDEBAR: ЗАГРУЗКА КНИГ ==================
 st.sidebar.header("📚 Управление книгами")

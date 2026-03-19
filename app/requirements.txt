@@ -1,16 +1,17 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 streamlit
 requests
 python-dotenv
-
 langchain
 langchain-core
 langchain-community
 langchain-groq
-
-huggingface-hub
-sentence-transformers
-
-torch==2.2.2+cpu
+langchain-huggingface
+langchain-experimental
+faiss-cpu
+huggingface-hub>=0.23.2
+sentence-transformers>=3.0.0
+transformers>=4.45.0
+torch>=2.4.0
 numpy<2
-
---extra-index-url https://download.pytorch.org/whl/cpu

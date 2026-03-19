@@ -1,16 +1,16 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /faiss
 
-COPY requirements.txt ./
+# Копируем requirements
+COPY faiss/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN mkdir -p /faiss/faiss_index
-
-COPY faiss_server.py ./
+# Копируем ВСЁ из папки faiss (включая код сервера и папку faiss_index)
+COPY faiss/ ./
 
 EXPOSE 8001
 
-CMD ["uvicorn", "faiss_server:app", "--host", "0.0.0.0", "--port", "8001"]
-
+# Запуск FastAPI/Uvicorn сервера
+CMD ["sh", "-c", "ls -la && uvicorn faiss_server:app --host 0.0.0.0 --port 8001"]
 

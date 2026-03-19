@@ -26,4 +26,7 @@ services:
       - ./.streamlit/secrets.toml:/app/.streamlit/secrets.toml
     restart: unless-stopped
 
+volumes:
+  faiss_data:
+
 

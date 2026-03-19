@@ -1,8 +1,8 @@
 import requests
 from typing import List
+import os
 
-FAISS_API_URL = "http://faiss:8001"
-
+FAISS_API_URL = os.getenv("FAISS_API_URL", "http://faiss:8001")
 
 def faiss_search(query: str, k: int = 5, source: str | None = None) -> List[dict]:
     try:

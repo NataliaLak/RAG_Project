@@ -1,3 +1,5 @@
+import torch
+import torch.nn as nn
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from typing import Optional
 from pydantic import BaseModel

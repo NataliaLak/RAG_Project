@@ -1,0 +1,34 @@
+location: polandcentral
+properties:
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8501
+      transport: auto
+  template:
+    containers:
+      - image: nataliaragacr.azurecr.io/rag-app:v1
+        name: rag-frontend
+        env:
+          - name: GROQ_API_KEY
+            secretRef: groq-key
+          - name: FAISS_API_URL
+            value: http://localhost:8001
+        resources:
+          cpu: 0.5
+          memory: 1.0Gi
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      - image: nataliaragacr.azurecr.io/rag-faiss:v1
+        name: faiss-service
+        resources:
+          cpu: 0.5
+          memory: 1.0Gi
+    scale:
+      minReplicas: 1
+      maxReplicas: 1
