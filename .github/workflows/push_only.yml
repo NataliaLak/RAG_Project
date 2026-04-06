@@ -22,9 +22,9 @@ jobs:
       - name: Build and Push Frontend
         run: |
           docker build -t nataliaragacr.azurecr.io/rag-app:v2 -f app/Dockerfile .
-          docker push nataliaragacr.azurecr.io/rag-app:v2
+          docker push nataliaragacr.azurecr.io/rag-app:v3
 
       - name: Build and Push Backend
         run: |
           docker build -t nataliaragacr.azurecr.io/rag-faiss:v2 -f faiss/Dockerfile.faiss .
-          docker push nataliaragacr.azurecr.io/rag-faiss:v2
+          docker push nataliaragacr.azurecr.io/rag-faiss:v3

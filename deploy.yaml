@@ -7,7 +7,7 @@ properties:
       transport: auto
   template:
     containers:
-      - image: nataliaragacr.azurecr.io/rag-app:v1
+      - image: nataliaragacr.azurecr.io/rag-app:v3
         name: rag-frontend
         env:
           - name: GROQ_API_KEY
@@ -24,7 +24,7 @@ properties:
               port: 8501
             initialDelaySeconds: 30
             periodSeconds: 30
-      - image: nataliaragacr.azurecr.io/rag-faiss:v1
+      - image: nataliaragacr.azurecr.io/rag-faiss:v3
         name: faiss-service
         resources:
           cpu: 0.5
