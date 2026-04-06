@@ -13,7 +13,7 @@ venv/
 
 # Data files
 data/
-faiss/faiss_index/
+#faiss/faiss_index/
 
 # Streamlit secrets
 .streamlit/secrets.toml
@@ -22,7 +22,7 @@ app/.streamlit/
 
 # Model & cache files
 *.log
-*.pkl
+#*.pkl
 *.npy
 *.pt
 *.ckpt
